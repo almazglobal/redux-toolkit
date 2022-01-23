@@ -1,5 +1,6 @@
 import React from 'react';
 import {useDispatch} from "react-redux";
+import {removeTodo, toggleTodoComplete} from "../store/todoSlice";
 
 type TodoListItemType = {
     text: string
@@ -8,21 +9,24 @@ type TodoListItemType = {
 }
 const TodoItem: React.FC<TodoListItemType> = ({text, completed, id}) => {
     const dispatch = useDispatch()
-    const removeTodo = (todoId: string) => {
+    const removeTodoHandle = (todoId: string) => {
         dispatch(removeTodo(todoId))
     }
 
-    const toggleCompletedTodo = (todoId: string) => {
-        dispatch(toggleCompletedTodo(todoId))
+    const toggleCompletedTodoHandle = (todoId: string) => {
+        dispatch(toggleTodoComplete(todoId))
     }
     return (
         <>
             <li>
-                <input type="checkbox"
-                       checked={completed}
-                       onChange={() => toggleCompletedTodo(id)} />
-                <span>{text}</span>
-                <button className={'delete'} onClick={() => removeTodo(id)}>&times;</button>
+                <label>
+                    <input type="checkbox"
+                           checked={completed}
+                           onChange={() => toggleCompletedTodoHandle(id)} />
+                    <span>{text}</span>
+                </label>
+
+                <span className={'delete'} onClick={() => removeTodoHandle(id)}>&times;</span>
             </li>
         </>
     );

@@ -1,12 +1,17 @@
-import React, {ChangeEvent} from 'react';
+import React, {ChangeEvent, useState} from 'react';
+import {useDispatch} from "react-redux";
+import {addTodo} from "../store/todoSlice";
 
-type InputFormType = {
-    text: string
-    setText: (text: string) => void
-    handleSubmit: () => void
-}
 
-export const InputForm: React.FC<InputFormType> = ({text, setText, handleSubmit}) => {
+export const InputForm: React.FC = () => {
+
+    const [text, setText] = useState<string>('')
+    const dispatch = useDispatch()
+    const addTask = () => {
+        dispatch(addTodo(text))
+        setText('')
+    }
+
     const onTextHandler = (e: ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value)
     }
@@ -16,7 +21,7 @@ export const InputForm: React.FC<InputFormType> = ({text, setText, handleSubmit}
                 <input type="text"
                        value={text}
                        onChange={onTextHandler} />
-                <button onClick={handleSubmit}>Add Todo</button>
+                <button onClick={addTask}>Add Todo</button>
             </label>
         </>
     );

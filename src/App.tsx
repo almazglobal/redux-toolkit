@@ -8,20 +8,9 @@ import {addTodo} from "./store/todoSlice";
 
 function App() {
 
-    const [text, setText] = useState<string>('')
-    const dispatch = useDispatch()
-    const addTask = () => {
-        dispatch(addTodo(text))
-        setText('')
-    }
-
     return (
         <div className="App">
-            <InputForm
-                text={text}
-                setText={setText}
-                handleSubmit={addTask}
-            />
+            <InputForm   />
             <TodoList />
         </div>
     );
