@@ -1,6 +1,6 @@
 import React, {ChangeEvent, useState} from 'react';
 import {useDispatch} from "react-redux";
-import {addTodo} from "../store/todoSlice";
+import {addNewTask, addTodo} from "../store/todoSlice";
 
 
 export const InputForm: React.FC = () => {
@@ -8,7 +8,7 @@ export const InputForm: React.FC = () => {
     const [text, setText] = useState<string>('')
     const dispatch = useDispatch()
     const addTask = () => {
-        dispatch(addTodo(text))
+        dispatch(addNewTask(text))
         setText('')
     }
 

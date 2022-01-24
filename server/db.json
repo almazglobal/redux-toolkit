@@ -1,0 +1,26 @@
+{
+  "todos": [
+    {
+      "userId": 1,
+      "id": 1,
+      "title": "delectus aut autem",
+      "completed": false
+    },
+    {
+      "title": "rergfg",
+      "userId": 1,
+      "completed": false,
+      "id": 2
+    },
+    {
+      "title": "yhfghfghf",
+      "userId": 1,
+      "completed": false,
+      "id": 3
+    }
+  ],
+  "media": {
+    "id": "122",
+    "title": "React"
+  }
+}

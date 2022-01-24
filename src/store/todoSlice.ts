@@ -1,6 +1,7 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {v4} from "uuid";
 import {RootState} from "./index";
+import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 
 export type TodoType = {
     id: string
@@ -37,8 +38,37 @@ const initialState: initialStateType = {
     status: null as null | string,
     error: null as any,
 }
+export const addNewTask = createAsyncThunk<void, string>(
+    'todos/addNewTask',
+    async function (title, {rejectWithValue, dispatch}) {
+        try {
+            const response = await fetch('https://jsonplaceholder.typicode.com/todos',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title,
+                        userId: 1,
+                        completed: false,
+                    }),
+                })
+            if (!response.ok) throw new Error("Can't add new task. Error server")
+            const data = await response.json()
+            dispatch(addTodo(data))
+        } catch (error: any) {
+            return rejectWithValue(error.message)
+        }
+    }
+)
 
-export const toggleStatus = createAsyncThunk<any, any, { state: RootState }>(
+export const toggleStatus = createAsyncThunk<void,
+    string,
+    {
+        state: RootState,
+        // rejectValue: Error,
+    }>(
     'todos/toggleStatus',
     async function (id: string, {rejectWithValue, dispatch, getState}) {
         const completed = getState().todos.todos.find(todo => id === todo.id)!.completed
@@ -55,8 +85,20 @@ export const toggleStatus = createAsyncThunk<any, any, { state: RootState }>(
                 })
             if (!response.ok) throw new Error("Can't change status of task. Server error")
             dispatch(toggleTodoComplete(id))
-        } catch (error: any) {
-            return rejectWithValue(error.message)
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message)
+            } else {
+                return rejectWithValue('Error')
+            }
+
+            // const isError = (candidate: any): candidate is Error => {
+            //     return candidate.isFetchError === true;
+            // }
+            // if (isError(error)) {
+            //     return rejectWithValue(error.message)
+            // }
+
         }
 
     }
@@ -96,12 +138,8 @@ export const todoSlice = createSlice({
     name: 'todos',
     initialState,
     reducers: {
-        addTodo(state, action: PayloadAction<string>) {
-            state.todos.unshift({
-                id: v4(),
-                title: action.payload,
-                completed: false,
-            })
+        addTodo(state, action: PayloadAction<TodoType>) {
+            state.todos.unshift(action.payload)
         },
         removeTodo(state, action: PayloadAction<string>) {
             state.todos = state.todos.filter(todo => todo.id !== action.payload)
@@ -134,7 +172,10 @@ export const todoSlice = createSlice({
             state.status = 'rejected'
             state.error = action.payload
         })
-
+        builder.addCase(addNewTask.rejected, (state, action) => {
+            state.status = 'rejected'
+            state.error = action.payload
+        })
     },
 
 
