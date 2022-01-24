@@ -6,6 +6,7 @@ import {TodoType} from "../store/todoSlice";
 
 export const TodoList: React.FC = () => {
     const todos = useSelector<RootState, TodoType[]>(state => state.todos.todos)
+    debugger
     return (
 
         <>
