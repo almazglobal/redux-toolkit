@@ -2,47 +2,49 @@ import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {v4} from "uuid";
 import {RootState} from "./index";
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import {normalize, schema} from "normalizr";
 
-export type TodoType = {
+const baseUrl = 'http://localhost:3001/posts'
+
+export type CommentType = {
     id: string
-    title: string
-    completed: boolean
+    author: {
+        username: string
+        name: string
+    },
+    comment: string
 }
 
-const init: TodoType[] = [
-    {
-        id: v4(),
-        title: 'CSS',
-        completed: false,
-    },
-    {
-        id: v4(),
-        title: 'React',
-        completed: true,
-    },
-    {
-        id: v4(),
-        title: 'JS',
-        completed: false,
-    },
-]
+export type AuthorType = {
+    username: string
+    name: string
+}
+
+export type PostType = {
+    id: string,
+    author: AuthorType
+    body: string
+    comments: CommentType[]
+}
+
+const init: PostType[] = []
 
 export type initialStateType = {
-    todos: TodoType[]
+    posts: PostType[]
     status: null | string
     error: any
 }
 
 const initialState: initialStateType = {
-    todos: [],
+    posts: [],
     status: null as null | string,
     error: null as any,
 }
 export const addNewTask = createAsyncThunk<void, string>(
-    'todos/addNewTask',
+    'posts/addNewTask',
     async function (title, {rejectWithValue, dispatch}) {
         try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/todos',
+            const response = await fetch(baseUrl,
                 {
                     method: 'POST',
                     headers: {
@@ -56,7 +58,7 @@ export const addNewTask = createAsyncThunk<void, string>(
                 })
             if (!response.ok) throw new Error("Can't add new task. Error server")
             const data = await response.json()
-            dispatch(addTodo(data))
+            dispatch(addPost(data))
         } catch (error: any) {
             return rejectWithValue(error.message)
         }
@@ -69,46 +71,18 @@ export const toggleStatus = createAsyncThunk<void,
         state: RootState,
         // rejectValue: Error,
     }>(
-    'todos/toggleStatus',
+    'posts/toggleStatus',
     async function (id: string, {rejectWithValue, dispatch, getState}) {
-        const completed = getState().todos.todos.find(todo => id === todo.id)!.completed
-        try {
-            const response = await fetch(`https://jsonplaceholder.typicode.com/todos/${id}`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        completed: !completed
-                    })
-                })
-            if (!response.ok) throw new Error("Can't change status of task. Server error")
-            dispatch(toggleTodoComplete(id))
-        } catch (error) {
-            if (error instanceof Error) {
-                return rejectWithValue(error.message)
-            } else {
-                return rejectWithValue('Error')
-            }
 
-            // const isError = (candidate: any): candidate is Error => {
-            //     return candidate.isFetchError === true;
-            // }
-            // if (isError(error)) {
-            //     return rejectWithValue(error.message)
-            // }
-
-        }
 
     }
 )
 
 export const deleteTodo = createAsyncThunk(
-    'todos/deleteTodo',
+    'posts/deleteTodo',
     async function (id: string, {rejectWithValue, dispatch}) {
         try {
-            const response = await fetch(`https://jsonplaceholder.typicode.com/todos/${id}`,
+            const response = await fetch(`${baseUrl}/${id}`,
                 {
                     method: 'DELETE'
                 })
@@ -120,13 +94,30 @@ export const deleteTodo = createAsyncThunk(
     }
 )
 
-export const fetchTodos = createAsyncThunk(
-    'todos/fetchTodos',
+export const fetchPosts = createAsyncThunk(
+    'posts/fetchPosts',
     async function (_, {rejectWithValue}) {
         try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/todos?_limit=10')
+            const response = await fetch(`${baseUrl}?_limit=10`)
             if (!response.ok) throw new Error('Server error')
             const data = await response.json()
+
+            // Define a users schema
+            const user = new schema.Entity('user');
+
+            // Define your comments schema
+            const comment = new schema.Entity('comments', {
+                author: user
+            });
+
+            // Define your article
+            const posts = new schema.Entity('post', {
+                author: user,
+                comments: [comment]
+            });
+
+            const normalizedData = normalize(data, posts);
+            debugger
             return data
         } catch (error: any) {
             return rejectWithValue(error.message)
@@ -134,33 +125,33 @@ export const fetchTodos = createAsyncThunk(
 
     }
 )
-export const todoSlice = createSlice({
-    name: 'todos',
+export const postsSlice = createSlice({
+    name: 'posts',
     initialState,
     reducers: {
-        addTodo(state, action: PayloadAction<TodoType>) {
-            state.todos.unshift(action.payload)
+        addPost(state, action: PayloadAction<PostType>) {
+            state.posts.unshift(action.payload)
         },
         removeTodo(state, action: PayloadAction<string>) {
-            state.todos = state.todos.filter(todo => todo.id !== action.payload)
+            state.posts = state.posts.filter(posts => posts.id !== action.payload)
         },
         toggleTodoComplete(state, action: PayloadAction<string>) {
-            const toggleTodo = state.todos.find(todo => todo.id === action.payload)
-            if (toggleTodo)
-                toggleTodo.completed = !toggleTodo.completed
+            // const toggleTodo = state.posts.find(posts => posts.id === action.payload)
+            // if (toggleTodo)
+            //     toggleTodo.completed = !toggleTodo.completed
         },
     },
     extraReducers: (builder) => {
         // The `builder` callback form is used here because it provides correctly typed reducers from the action creators
-        builder.addCase(fetchTodos.pending, (state, action) => {
+        builder.addCase(fetchPosts.pending, (state, action) => {
             state.status = 'loading'
             state.error = null
         })
-        builder.addCase(fetchTodos.fulfilled, (state, action) => {
+        builder.addCase(fetchPosts.fulfilled, (state, action) => {
             state.status = 'resolved'
-            state.todos = action.payload
+            state.posts = action.payload
         })
-        builder.addCase(fetchTodos.rejected, (state, action) => {
+        builder.addCase(fetchPosts.rejected, (state, action) => {
             state.status = 'rejected'
             state.error = action.payload
         })
@@ -181,5 +172,5 @@ export const todoSlice = createSlice({
 
 })
 
-export const {addTodo, removeTodo, toggleTodoComplete} = todoSlice.actions
-export const todoReducer = todoSlice.reducer
+export const {addPost, removeTodo, toggleTodoComplete} = postsSlice.actions
+export const postsReducer = postsSlice.reducer

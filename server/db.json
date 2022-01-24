@@ -1,26 +1,64 @@
 {
-  "todos": [
+  "posts": [
     {
-      "userId": 1,
-      "id": 1,
-      "title": "delectus aut autem",
-      "completed": false
+      "id": "1",
+      "author": {
+        "id": "1",
+        "name": "User 1"
+      },
+      "body": "About post 1",
+      "comments": [
+        {
+          "id": "1",
+          "author": {
+            "id": "2",
+            "name": "User 2"
+          },
+          "comment": "comment1 by user2"
+        },
+        {
+          "id": "2",
+          "author": {
+            "id": "3",
+            "name": "User 3"
+          },
+          "comment": "comment2 by user3"
+        }
+      ]
     },
     {
-      "title": "rergfg",
-      "userId": 1,
-      "completed": false,
-      "id": 2
-    },
-    {
-      "title": "yhfghfghf",
-      "userId": 1,
-      "completed": false,
-      "id": 3
+      "id": "2",
+      "author": {
+        "id": "2",
+        "name": "User 2"
+      },
+      "body": "About post 2",
+      "comments": [
+        {
+          "id": "3",
+          "author": {
+            "id": "3",
+            "name": "User 3"
+          },
+          "comment": "comment3 by user3"
+        },
+        {
+          "id": "4",
+          "author": {
+            "id": "1",
+            "name": "User 1"
+          },
+          "comment": "comment4 by user1"
+        },
+        {
+          "id": "comment5",
+          "author": {
+            "id": "3",
+            "name": "User 3"
+          },
+          "comment": "comment5 by user3"
+        }
+      ]
     }
-  ],
-  "media": {
-    "id": "122",
-    "title": "React"
-  }
+  ]
 }

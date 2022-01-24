@@ -1,6 +1,6 @@
 import React, {ChangeEvent, useState} from 'react';
 import {useDispatch} from "react-redux";
-import {addNewTask, addTodo} from "../store/todoSlice";
+import {addNewTask, addPost} from "../store/postsSlice";
 
 
 export const InputForm: React.FC = () => {
